@@ -1,3 +1,3 @@
-module git_standup
+module git-standup
 
 go 1.25.0
