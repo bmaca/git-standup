@@ -68,6 +68,7 @@ func main() {
 
 	// key: date -> repo -> []Commit
 	byDayRepo := map[string]map[string][]Commit{}
+	foundAny := false
 
 	for _, repo := range repos {
 		commits, err := getCommits(repo, author, sinceStr, untilStr)
@@ -75,12 +76,22 @@ func main() {
 			fmt.Fprintf(os.Stderr, "warning: repo %s: %v\n", repo, err)
 			continue
 		}
+		if len(commits) > 0 {
+			foundAny = true
+		}
 		for _, c := range commits {
 			if byDayRepo[c.Date] == nil {
 				byDayRepo[c.Date] = map[string][]Commit{}
 			}
 			byDayRepo[c.Date][c.Repo] = append(byDayRepo[c.Date][c.Repo], c)
 		}
+	}
+	if !foundAny {
+		fmt.Fprintf(os.Stderr,
+			"no commits found for author %q in range %s to %s.\nEnsure you have given it the correct User.\n",
+			author, sinceStr, untilStr,
+		)
+		os.Exit(1)
 	}
 
 	if markdown {
